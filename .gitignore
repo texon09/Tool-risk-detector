@@ -18,8 +18,8 @@ Thumbs.db
 data/**
 !data/**/
 !data/**/.gitkeep
-!data/processed/feature_list.json
-!data/processed/adversarial_test.json
+!data/processed/*.csv
+!data/processed/*.json
 artifacts/**
 !artifacts/**/
 !artifacts/**/.gitkeep

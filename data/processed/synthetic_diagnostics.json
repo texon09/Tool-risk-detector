@@ -1,0 +1,12 @@
+{
+  "train": {
+    "safe_step_count_mean": 5.995061728395061,
+    "hr_step_count_mean": 5.384328358208955,
+    "safe_cost_mean": 24.830843621399175,
+    "hr_cost_mean": 19.35749067164179,
+    "safe_arg_len_mean": 779.7139917695473,
+    "hr_arg_len_mean": 688.8162313432836,
+    "hr_short_attack_rate": 0.3572761194029851,
+    "hr_steps_leq_3_rate": 0.46548507462686567
+  }
+}
