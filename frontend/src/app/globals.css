@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --step-0: #09090b; /* base canvas */
+  --step-1: #121215; /* secondary canvas / header */
+  --step-2: #18181b; /* card surface */
+  --step-3: #222226; /* inner surface */
+  --step-4: #27272a; /* borders */
+  --step-5: #3f3f46; /* hover borders */
+  --step-6: #71717a; /* tertiary labels */
+  --step-7: #a1a1aa; /* secondary text */
+  --step-8: #e4e4e7; /* primary text */
+  --step-9: #fafafa; /* highlight text */
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* App view-fit: no whole-page vertical scroll */
+  background-color: var(--step-0);
+  color: var(--step-8);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Micro scrollbars inside internal panels */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: var(--step-0);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--step-4);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--step-5);
+}

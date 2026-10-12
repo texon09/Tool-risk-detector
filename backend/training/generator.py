@@ -1,0 +1,1 @@
+"""benign trajectory generator (templates)."""

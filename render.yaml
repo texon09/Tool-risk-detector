@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: aiml-risk-detector-api
+    runtime: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: DATABASE_URL
+        value: sqlite:////data/audit.db
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: MODEL_DIR
+        value: artifacts/models/v2
+      - key: DATA_DIR
+        value: data/processed
+      - key: RATE_LIMIT_MAX
+        value: 120
+      - key: RATE_LIMIT_WINDOW
+        value: 60
+      - key: MAX_REQUEST_SIZE
+        value: 1048576

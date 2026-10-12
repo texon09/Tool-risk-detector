@@ -1,0 +1,141 @@
+{
+  "version": "v2",
+  "feature_names": [
+    "step_count",
+    "unique_tool_count",
+    "tool_db_query_count",
+    "tool_file_read_count",
+    "tool_file_write_count",
+    "tool_http_post_count",
+    "tool_email_send_count",
+    "tool_shell_exec_count",
+    "tool_directory_search_count",
+    "tool_unknown_count",
+    "has_write_operation",
+    "write_step_count",
+    "has_irreversible_step",
+    "irreversible_step_count",
+    "perm_required_count",
+    "perm_admin_count",
+    "perm_network_ext_count",
+    "perm_filesystem_count",
+    "dest_external_count",
+    "dest_has_ip_literal",
+    "sens_count_public",
+    "sens_count_internal",
+    "sens_count_confidential",
+    "sens_count_restricted",
+    "sens_count_secret",
+    "has_sensitive_data",
+    "arg_sql_keyword_count",
+    "arg_path_traversal_count",
+    "arg_sensitive_path_count",
+    "arg_suspicious_url_count",
+    "arg_encoded_payload_count",
+    "arg_credential_pattern_count",
+    "arg_pii_pattern_count",
+    "kill_chain_recon_count",
+    "kill_chain_access_count",
+    "kill_chain_exfil_count",
+    "mcp_server_count",
+    "mcp_resource_uri_count"
+  ],
+  "class_order": [
+    "SAFE",
+    "SUSPICIOUS",
+    "HIGH-RISK"
+  ],
+  "ensemble_weights": {
+    "rf": 0.4,
+    "xgb": 0.4,
+    "dt": 0.1,
+    "iso": 0.1
+  },
+  "calibration_method": "platt",
+  "thresholds": {
+    "t_medium": null,
+    "t_high": null,
+    "t_confirm": null,
+    "t_block": null
+  },
+  "thresholds_note": "fitted later on the full hybrid pipeline",
+  "operating_points": {
+    "1%": {
+      "threshold": 0.049015178295329004,
+      "recall": 1.0,
+      "suspicious_share": 1.0,
+      "actual_safe_fpr": 0.008086253369272238
+    },
+    "2%": {
+      "threshold": 0.043977755999089714,
+      "recall": 1.0,
+      "suspicious_share": 1.0,
+      "actual_safe_fpr": 0.018867924528301886
+    },
+    "5%": {
+      "threshold": 0.03761461270357429,
+      "recall": 1.0,
+      "suspicious_share": 1.0,
+      "actual_safe_fpr": 0.04851752021563342
+    },
+    "10%": {
+      "threshold": 0.03449269962395601,
+      "recall": 1.0,
+      "suspicious_share": 1.0,
+      "actual_safe_fpr": 0.09973045822102426
+    }
+  },
+  "anomaly_threshold": -0.07935803843038902,
+  "hyperparameters": {
+    "dt": {
+      "max_depth": 3,
+      "class_weight": "balanced"
+    },
+    "rf": {
+      "n_estimators": 200,
+      "max_depth": null,
+      "min_samples_leaf": 1,
+      "class_weight": "balanced"
+    },
+    "xgb": {
+      "n_estimators": 200,
+      "max_depth": 3,
+      "learning_rate": 0.05,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "objective": "multi:softprob",
+      "num_class": 3
+    }
+  },
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "sha256": {
+    "train_features.csv": "e64d8c2a1b40543c176c397e8ee6f07e3ca896aff7bad7e9e206dab61ac58dca",
+    "val_features.csv": "0ace3d13d704bda819a4c3f53ee10a05829428e412d2ea062f0d01e79659979f"
+  },
+  "row_counts": {
+    "train_features.csv": 3835,
+    "val_features.csv": 567
+  },
+  "test_files": "not used in training",
+  "constant_feature_names": [],
+  "library_versions": {
+    "numpy": "2.4.6",
+    "pandas": "3.0.6",
+    "xgboost": "3.2.0",
+    "joblib": "1.6.0"
+  },
+  "created_at": "2026-10-12T08:42:12.322845Z",
+  "joblib_sha256": {
+    "decision_tree.joblib": "9e42996f4bd0f97689e3c9aefc6fa47511b0bcf8b8c476bfb135c16c9132dce2",
+    "random_forest.joblib": "5cfd5ffe0bf3f05e76e025597b769f69a2041c5758bdecf9a17b80d2dee9c211",
+    "xgboost.joblib": "686cd46c88d7c8e7be7078b484d6a5a2e89aeb7e44baf580410aeba0d15b4ee7",
+    "isolation_forest.joblib": "c71597079d3c94b1db2c99ce421ab6356e9d72460881b52065cbefcafd42214d",
+    "calibrator.joblib": "310990e7cd06f26101270e738b7578101b9a71491cee08b8be63a660b51dc0bb"
+  }
+}

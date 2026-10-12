@@ -1,0 +1,459 @@
+{
+  "dedup_info": {
+    "removed_rows": 0,
+    "remaining_class_mix": {
+      "SAFE": 699,
+      "SUSPICIOUS": 108,
+      "HIGH-RISK": 291
+    },
+    "removed_with_diff_label": 0
+  },
+  "E1": {
+    "full": {
+      "DT": {
+        "precision": [
+          0.9886845827439887,
+          1.0,
+          1.0
+        ],
+        "recall": [
+          1.0,
+          0.9259259259259259,
+          1.0
+        ],
+        "f1": [
+          0.9943100995732574,
+          0.9615384615384616,
+          1.0
+        ],
+        "macro_f1": 0.9852828537039063,
+        "hr_pr_auc": 1.0,
+        "recall_at_thresh": 1.0,
+        "safe_fpr_at_thresh": 0.0,
+        "share_suspicious_flagged": 0.7870370370370371,
+        "confusion_matrix": [
+          [
+            699,
+            0,
+            0
+          ],
+          [
+            8,
+            100,
+            0
+          ],
+          [
+            0,
+            0,
+            291
+          ]
+        ],
+        "ci_95_recall": [
+          1.0,
+          1.0
+        ],
+        "ci_95_fpr": [
+          0.0,
+          0.0
+        ]
+      },
+      "RF": {
+        "precision": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "recall": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "f1": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "macro_f1": 1.0,
+        "hr_pr_auc": 0.9999999999999999,
+        "recall_at_thresh": 1.0,
+        "safe_fpr_at_thresh": 0.024320457796852647,
+        "share_suspicious_flagged": 0.9907407407407407,
+        "confusion_matrix": [
+          [
+            699,
+            0,
+            0
+          ],
+          [
+            0,
+            108,
+            0
+          ],
+          [
+            0,
+            0,
+            291
+          ]
+        ],
+        "ci_95_recall": [
+          1.0,
+          1.0
+        ],
+        "ci_95_fpr": [
+          0.013779975824511933,
+          0.03776223776223776
+        ]
+      },
+      "XGB": {
+        "precision": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "recall": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "f1": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "macro_f1": 1.0,
+        "hr_pr_auc": 0.9999999999999999,
+        "recall_at_thresh": 1.0,
+        "safe_fpr_at_thresh": 0.02861230329041488,
+        "share_suspicious_flagged": 0.9907407407407407,
+        "confusion_matrix": [
+          [
+            699,
+            0,
+            0
+          ],
+          [
+            0,
+            108,
+            0
+          ],
+          [
+            0,
+            0,
+            291
+          ]
+        ],
+        "ci_95_recall": [
+          1.0,
+          1.0
+        ],
+        "ci_95_fpr": [
+          0.01624815361890694,
+          0.04341322781354801
+        ]
+      },
+      "Ensemble": {
+        "recall_at_thresh": 0.9965635738831615,
+        "safe_fpr_at_thresh": 0.0,
+        "share_suspicious_flagged": 0.0,
+        "hr_pr_auc": 1.0,
+        "ci_95_recall": [
+          0.9889705882352942,
+          1.0
+        ],
+        "ci_95_fpr": [
+          0.0,
+          0.0
+        ]
+      },
+      "Baseline": {
+        "accuracy": 0.6366120218579235,
+        "macro_f1": 0.2593210907067334
+      }
+    },
+    "non_repeated": {
+      "DT": {
+        "precision": [
+          0.9886845827439887,
+          1.0,
+          1.0
+        ],
+        "recall": [
+          1.0,
+          0.9259259259259259,
+          1.0
+        ],
+        "f1": [
+          0.9943100995732574,
+          0.9615384615384616,
+          1.0
+        ],
+        "macro_f1": 0.9852828537039063,
+        "hr_pr_auc": 1.0,
+        "recall_at_thresh": 1.0,
+        "safe_fpr_at_thresh": 0.0,
+        "share_suspicious_flagged": 0.7870370370370371,
+        "confusion_matrix": [
+          [
+            699,
+            0,
+            0
+          ],
+          [
+            8,
+            100,
+            0
+          ],
+          [
+            0,
+            0,
+            291
+          ]
+        ],
+        "ci_95_recall": [
+          1.0,
+          1.0
+        ],
+        "ci_95_fpr": [
+          0.0,
+          0.0
+        ]
+      },
+      "RF": {
+        "precision": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "recall": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "f1": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "macro_f1": 1.0,
+        "hr_pr_auc": 0.9999999999999999,
+        "recall_at_thresh": 1.0,
+        "safe_fpr_at_thresh": 0.024320457796852647,
+        "share_suspicious_flagged": 0.9907407407407407,
+        "confusion_matrix": [
+          [
+            699,
+            0,
+            0
+          ],
+          [
+            0,
+            108,
+            0
+          ],
+          [
+            0,
+            0,
+            291
+          ]
+        ],
+        "ci_95_recall": [
+          1.0,
+          1.0
+        ],
+        "ci_95_fpr": [
+          0.013779975824511933,
+          0.03776223776223776
+        ]
+      },
+      "XGB": {
+        "precision": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "recall": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "f1": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "macro_f1": 1.0,
+        "hr_pr_auc": 0.9999999999999999,
+        "recall_at_thresh": 1.0,
+        "safe_fpr_at_thresh": 0.02861230329041488,
+        "share_suspicious_flagged": 0.9907407407407407,
+        "confusion_matrix": [
+          [
+            699,
+            0,
+            0
+          ],
+          [
+            0,
+            108,
+            0
+          ],
+          [
+            0,
+            0,
+            291
+          ]
+        ],
+        "ci_95_recall": [
+          1.0,
+          1.0
+        ],
+        "ci_95_fpr": [
+          0.01624815361890694,
+          0.04341322781354801
+        ]
+      },
+      "Ensemble": {
+        "recall_at_thresh": 0.9965635738831615,
+        "safe_fpr_at_thresh": 0.0,
+        "share_suspicious_flagged": 0.0,
+        "hr_pr_auc": 1.0,
+        "ci_95_recall": [
+          0.9889705882352942,
+          1.0
+        ],
+        "ci_95_fpr": [
+          0.0,
+          0.0
+        ]
+      },
+      "Baseline": {
+        "accuracy": 0.6366120218579235,
+        "macro_f1": 0.2593210907067334
+      }
+    }
+  },
+  "warnings": [
+    "SUSPICIOUSLY PERFECT: check for label leakage or shared generator assumptions",
+    "SUSPICIOUSLY PERFECT: check for label leakage or shared generator assumptions"
+  ],
+  "E2": {
+    "full": {
+      "extra_hr_caught_by_anomaly": 1,
+      "extra_susp_caught_by_anomaly": 96,
+      "safe_fpr_cost_of_anomaly": 0.04291845493562232,
+      "rules_only": "not computed: rule engine not yet integrated",
+      "hybrid": "not computed: rule engine not yet integrated"
+    },
+    "non_repeated": {
+      "extra_hr_caught_by_anomaly": 1,
+      "extra_susp_caught_by_anomaly": 96,
+      "safe_fpr_cost_of_anomaly": 0.04291845493562232,
+      "rules_only": "not computed: rule engine not yet integrated",
+      "hybrid": "not computed: rule engine not yet integrated"
+    }
+  },
+  "force_used": true,
+  "E3": {
+    "credential_harvesting": {
+      "full": {
+        "pred_hr": 0.9833333333333333,
+        "pred_not_safe": 1.0,
+        "pred_ns_or_anom": 1.0
+      },
+      "non_repeated": {
+        "pred_hr": 0.9833333333333333,
+        "pred_not_safe": 1.0,
+        "pred_ns_or_anom": 1.0
+      },
+      "note": "FPR is not measurable"
+    },
+    "data_exfiltration": {
+      "full": {
+        "pred_hr": 0.9866666666666667,
+        "pred_not_safe": 1.0,
+        "pred_ns_or_anom": 1.0
+      },
+      "non_repeated": {
+        "pred_hr": 0.9866666666666667,
+        "pred_not_safe": 1.0,
+        "pred_ns_or_anom": 1.0
+      },
+      "note": "FPR is not measurable"
+    },
+    "destructive": {
+      "full": {
+        "pred_hr": 0.9966666666666667,
+        "pred_not_safe": 1.0,
+        "pred_ns_or_anom": 1.0
+      },
+      "non_repeated": {
+        "pred_hr": 0.9966666666666667,
+        "pred_not_safe": 1.0,
+        "pred_ns_or_anom": 1.0
+      },
+      "note": "FPR is not measurable"
+    },
+    "injection_triggered": {
+      "full": {
+        "pred_hr": 0.9866666666666667,
+        "pred_not_safe": 1.0,
+        "pred_ns_or_anom": 1.0
+      },
+      "non_repeated": {
+        "pred_hr": 0.9866666666666667,
+        "pred_not_safe": 1.0,
+        "pred_ns_or_anom": 1.0
+      },
+      "note": "FPR is not measurable"
+    },
+    "privilege_escalation": {
+      "full": {
+        "pred_hr": 0.9833333333333333,
+        "pred_not_safe": 0.9966666666666667,
+        "pred_ns_or_anom": 1.0
+      },
+      "non_repeated": {
+        "pred_hr": 0.9833333333333333,
+        "pred_not_safe": 0.9966666666666667,
+        "pred_ns_or_anom": 1.0
+      },
+      "note": "FPR is not measurable"
+    }
+  },
+  "E4": {
+    "full": {
+      "recall": 0.9833333333333333,
+      "fpr": 0.0
+    },
+    "non_repeated": {
+      "recall": 0.9833333333333333,
+      "fpr": 0.0
+    },
+    "subgroup_any_nz": {
+      "recall": 0.9833333333333333,
+      "fpr": 0.0
+    },
+    "subgroup_all_z": {
+      "recall": 0.0,
+      "fpr": 0.0
+    },
+    "out_of_range_share": 3.0525030525030525e-05
+  },
+  "E5": {
+    "recall": 1.0,
+    "fpr": 0.0,
+    "misses": []
+  },
+  "test_per_family": {
+    "data_exfiltration": 0.9852941176470589,
+    "destructive": 1.0,
+    "privilege_escalation": 1.0,
+    "credential_harvesting": 1.0,
+    "injection_triggered": 1.0
+  },
+  "test_per_difficulty": {
+    "easy": 1.0,
+    "hard": 0.9908256880733946,
+    "medium": 1.0
+  }
+}

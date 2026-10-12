@@ -1,0 +1,313 @@
+openapi: 3.1.0
+info:
+  title: Risk Detection API
+  version: 0.1.0
+paths:
+  /api/health:
+    get:
+      summary: Health Check
+      operationId: health_check_api_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /api/analyze:
+    post:
+      summary: Analyze Plan
+      operationId: analyze_plan_api_analyze_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzeRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyzeResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/audit:
+    get:
+      summary: Get Audit Logs
+      operationId: get_audit_logs_api_audit_get
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          default: 50
+          title: Limit
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          title: Offset
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/audit/verify:
+    post:
+      summary: Verify Audit Chain
+      operationId: verify_audit_chain_api_audit_verify_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /api/metrics:
+    get:
+      summary: Get Metrics
+      description: Return per-model metrics, or an explicit unavailable response.
+      operationId: get_metrics_api_metrics_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsResponse'
+  /api/scenarios:
+    get:
+      summary: Get Scenarios
+      description: Load the packaged demo scenarios.
+      operationId: get_scenarios_api_scenarios_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioResponse'
+components:
+  schemas:
+    AnalyzeRequest:
+      properties:
+        plan:
+          additionalProperties: true
+          type: object
+          title: Plan
+          description: The planned sequence of tool calls
+        context:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Context
+        mcp_meta:
+          anyOf:
+          - $ref: '#/components/schemas/MCPMeta'
+          - type: 'null'
+      type: object
+      required:
+      - plan
+      title: AnalyzeRequest
+    AnalyzeResponse:
+      properties:
+        action:
+          type: string
+          pattern: ^(ALLOW|CONFIRM|REVISE|BLOCK)$
+          title: Action
+        risk_score:
+          type: number
+          title: Risk Score
+        critical_violations:
+          type: integer
+          title: Critical Violations
+          default: 0
+        rule_hits:
+          items:
+            type: string
+          type: array
+          title: Rule Hits
+        rationale:
+          type: string
+          title: Rationale
+        feature_contributions:
+          additionalProperties:
+            type: number
+          type: object
+          title: Feature Contributions
+        model_votes:
+          additionalProperties: true
+          type: object
+          title: Model Votes
+        latency_ms:
+          type: number
+          title: Latency Ms
+          default: 0.0
+        audit_id:
+          type: string
+          title: Audit Id
+          default: ''
+        decision:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Decision
+        score:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Score
+      type: object
+      required:
+      - action
+      - risk_score
+      - rationale
+      title: AnalyzeResponse
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    MCPMeta:
+      properties:
+        server_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Server Name
+        tool_schema:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Tool Schema
+        resource_uris:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Resource Uris
+      type: object
+      title: MCPMeta
+    MetricsResponse:
+      properties:
+        models:
+          additionalProperties:
+            $ref: '#/components/schemas/ModelMetrics'
+          type: object
+          title: Models
+        available:
+          type: boolean
+          title: Available
+          default: true
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+      type: object
+      required:
+      - models
+      title: MetricsResponse
+    ModelMetrics:
+      properties:
+        f1:
+          type: number
+          title: F1
+        precision:
+          type: number
+          title: Precision
+        recall:
+          type: number
+          title: Recall
+        auroc:
+          type: number
+          title: Auroc
+        latency_ms:
+          type: number
+          title: Latency Ms
+      type: object
+      required:
+      - f1
+      - precision
+      - recall
+      - auroc
+      - latency_ms
+      title: ModelMetrics
+    Scenario:
+      properties:
+        name:
+          type: string
+          title: Name
+        description:
+          type: string
+          title: Description
+        plan:
+          additionalProperties: true
+          type: object
+          title: Plan
+        expected_decision:
+          type: string
+          pattern: ^(ALLOW|CONFIRM|REVISE|BLOCK)$
+          title: Expected Decision
+      type: object
+      required:
+      - name
+      - description
+      - plan
+      - expected_decision
+      title: Scenario
+    ScenarioResponse:
+      properties:
+        scenarios:
+          items:
+            $ref: '#/components/schemas/Scenario'
+          type: array
+          title: Scenarios
+      type: object
+      required:
+      - scenarios
+      title: ScenarioResponse
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError

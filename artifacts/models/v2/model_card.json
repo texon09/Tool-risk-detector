@@ -1,0 +1,38 @@
+{
+  "data_description": "Training data for risk detection.",
+  "val_metrics": {
+    "seed": 42,
+    "w_rf": 0.4,
+    "cal_method": "platt",
+    "ops": {
+      "1%": {
+        "threshold": 0.049015178295329004,
+        "recall": 1.0,
+        "suspicious_share": 1.0,
+        "actual_safe_fpr": 0.008086253369272238
+      },
+      "2%": {
+        "threshold": 0.043977755999089714,
+        "recall": 1.0,
+        "suspicious_share": 1.0,
+        "actual_safe_fpr": 0.018867924528301886
+      },
+      "5%": {
+        "threshold": 0.03761461270357429,
+        "recall": 1.0,
+        "suspicious_share": 1.0,
+        "actual_safe_fpr": 0.04851752021563342
+      },
+      "10%": {
+        "threshold": 0.03449269962395601,
+        "recall": 1.0,
+        "suspicious_share": 1.0,
+        "actual_safe_fpr": 0.09973045822102426
+      }
+    },
+    "iso_thresh": -0.07935803843038902,
+    "iso_susp_det": 0.6440677966101694,
+    "iso_hr_det": 0.9416058394160584
+  },
+  "limitations": "synthetic-data shared assumptions, per-call baseline not trainable from plan-level data, policy thresholds deferred"
+}

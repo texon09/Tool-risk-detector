@@ -1,0 +1,6 @@
+{
+  "t_medium": 0.4,
+  "t_high": 0.6,
+  "t_confirm": 0.75,
+  "t_block": 0.9
+}

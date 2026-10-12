@@ -1,0 +1,9 @@
+allowlist_domains: ["intranet.example.com", "api.partner.example.com"]
+sensitivity_levels: [confidential, restricted, secret]
+budget_threshold: 100
+broad_scope_threshold: 100
+r6:
+  max_steps: 25
+  max_repeat_calls: 3
+  bulk_read_rows: 1000
+rules_enabled: [R1, R2, R3, R4, R5, R6, R7, R8, R9]
