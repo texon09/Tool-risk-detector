@@ -42,7 +42,7 @@ jobs:
 
       - name: Run Pytest with Coverage
         run: |
-          python -m pytest --cov=backend --cov-report=term-missing --cov-fail-under=70 -v
+          python -m pytest --cov=backend/app --cov-report=term-missing --cov-fail-under=70 -v
 
   docker:
     name: Build Docker Container
