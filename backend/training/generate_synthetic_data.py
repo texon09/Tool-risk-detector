@@ -2,6 +2,7 @@
 
 import json
 import os
+
 import numpy as np
 import pandas as pd
 
@@ -437,9 +438,8 @@ def main():
     df_kag = pd.DataFrame(kag_rows)[feature_cols + ["label", "family", "difficulty", "plan_id", "task_id"]]
     df_kag.to_csv(os.path.join(data_dir, "kaggle_external_features.csv"), index=False)
 
-    # Save diagnostic summary
-    combined_diag = pd.concat([diag_train.assign(split="train"), diag_test.assign(split="test")])
     diag_summary = {
+
         "train": {
             "safe_step_count_mean": float(diag_train[diag_train["label"] == "SAFE"]["step_count"].mean()),
             "hr_step_count_mean": float(diag_train[diag_train["label"] == "HIGH-RISK"]["step_count"].mean()),

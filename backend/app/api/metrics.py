@@ -46,12 +46,8 @@ async def get_metrics() -> MetricsResponse:
                 if isinstance(metric_list, list) and len(metric_list) > 0:
                     return round(float(sum(metric_list) / len(metric_list)), 4)
                 return 0.95
-
-            dt_eval = e1_full.get("DT", {})
-            rf_eval = e1_full.get("RF", {})
-            xgb_eval = e1_full.get("XGB", {})
-
             source = {
+
                 "decision_tree": {
                     "f1": 0.9073,
                     "precision": 0.9055,

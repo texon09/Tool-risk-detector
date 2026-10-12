@@ -1,7 +1,7 @@
 """Tests for production hardening: CORS, rate limiting, payload size, and fail-closed handling."""
 
-from fastapi.testclient import TestClient
 from app.main import app
+from fastapi.testclient import TestClient
 
 client = TestClient(app)
 

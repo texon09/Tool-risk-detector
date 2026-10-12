@@ -4,14 +4,12 @@ from __future__ import annotations
 
 import logging
 import os
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import Any
+
 import numpy as np
 import pandas as pd
-
-from fastapi import APIRouter
-
 from app.audit.store import AuditStore
 from app.features.extractor import FEATURE_NAMES, extract_features
 from app.ml.ensemble import model_votes, normalize_iso_score, score_risk
@@ -20,6 +18,7 @@ from app.policy.decision import decide
 from app.rules.engine import RuleEngine
 from app.rules.inspector import ArgumentInspector
 from app.schemas import AnalyzeRequest, AnalyzeResponse
+from fastapi import APIRouter
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

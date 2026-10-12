@@ -1,8 +1,6 @@
-import json
-import os
+import sqlite3
 import sys
 import tempfile
-import sqlite3
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -12,13 +10,12 @@ if str(REPO_ROOT / "backend") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "backend"))
 
 from backend.app.audit.store import AuditStore
-from backend.app.rules.engine import RuleEngine
-from backend.app.rules.inspector import ArgumentInspector
-from backend.app.policy.decision import decide
-from backend.app.ml.loader import load_model
-from backend.app.ml.ensemble import score_risk, model_votes
 from backend.app.features.extractor import extract_features
+from backend.app.ml.ensemble import model_votes, score_risk
+from backend.app.ml.loader import load_model
 from backend.app.mock_tools.runtime import execute as execute_mock_tool
+from backend.app.policy.decision import decide
+
 
 def audit_tamper_test():
     print("--- 1. AUDIT LOGGER TAMPER TEST ---")
@@ -119,7 +116,6 @@ def verify_models_and_votes():
     sample_plan = {"steps": [{"action": "db_read", "tool": "database_query", "params": {"query": "SELECT * FROM users"}}]}
     features = extract_features(sample_plan)
     import pandas as pd
-    import numpy as np
     feat_df = pd.DataFrame([features], columns=manifest["feature_names"])
     
     rf_prob = float(models["random_forest"].predict_proba(feat_df)[:, 2][0])

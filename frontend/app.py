@@ -1,9 +1,10 @@
 """Streamlit Web Dashboard for AI Agent Tool-Call Risk Detector."""
 
 import json
-import os
-import streamlit as st
+
 import pandas as pd
+import streamlit as st
+
 from frontend.api_client import RiskDetectorAPIClient
 
 st.set_page_config(
@@ -89,13 +90,13 @@ with tab_monitor:
             banner_cols = st.columns([2, 1, 1, 1])
             with banner_cols[0]:
                 if action == "ALLOW":
-                    st.success(f"### Decision: ✅ **ALLOW**")
+                    st.success("### Decision: ✅ **ALLOW**")
                 elif action == "CONFIRM":
-                    st.info(f"### Decision: 👤 **CONFIRM** (Human Approval Required)")
+                    st.info("### Decision: 👤 **CONFIRM** (Human Approval Required)")
                 elif action == "REVISE":
-                    st.warning(f"### Decision: ⚠️ **REVISE** (Plan Revision Needed)")
+                    st.warning("### Decision: ⚠️ **REVISE** (Plan Revision Needed)")
                 else:
-                    st.error(f"### Decision: 🚫 **BLOCK** (Security Violation)")
+                    st.error("### Decision: 🚫 **BLOCK** (Security Violation)")
             with banner_cols[1]:
                 st.metric("Calibrated Risk Score", f"{risk_score:.2f}")
             with banner_cols[2]:

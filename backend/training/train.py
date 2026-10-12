@@ -5,7 +5,6 @@ import datetime
 import itertools
 import json
 import os
-import sys
 
 import joblib
 import numpy as np
@@ -347,14 +346,14 @@ def main():
     print("--- VAL metrics (mean/std) ---")
     rec_5 = [r["ops"]["5%"]["recall"] for r in val_results]
     print(f"Recall at 5% FPR: {np.mean(rec_5):.4f} ± {np.std(rec_5):.4f}")
-
     # Evaluate on test set
     ts_path = os.path.join(args.data_dir, "test_features.csv")
     if os.path.exists(ts_path):
         X_ts, y_ts_str, _ = load_split(ts_path, features)
-        y_ts_int = np.array([get_class_map()[v] for v in y_ts_str])
         print("\n--- Test Set Class Distribution ---")
         print(pd.Series(y_ts_str).value_counts())
+
+
 
         for m_name, model in [("Decision Tree", dt), ("Random Forest", rf), ("XGBoost", xgb_m)]:
             preds_int = model.predict(X_ts)

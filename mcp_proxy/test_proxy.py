@@ -1,8 +1,9 @@
 """End-to-end tests for MCP Proxy tool interception and enforcement."""
 
-from fastapi.testclient import TestClient
 import sys
 from pathlib import Path
+
+from fastapi.testclient import TestClient
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:

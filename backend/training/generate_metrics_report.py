@@ -3,9 +3,9 @@
 import json
 import os
 import time
-import numpy as np
-import pandas as pd
+
 from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score
+
 from backend.app.ml.loader import load_model
 from backend.training.data import load_feature_list, load_split
 
