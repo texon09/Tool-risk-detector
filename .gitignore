@@ -35,3 +35,4 @@ node_modules/
 
 scratch/
 .pytest_temp/
+pytest_temp/
