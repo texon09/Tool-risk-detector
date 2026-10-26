@@ -1,27 +1,42 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   getAuditLog,
   verifyAuditChain,
+  getCurrentUser,
+  User,
   AuditRecord,
   AuditVerifyResponse,
 } from "@/lib/api";
 
 export default function SingleScreenAuditPage() {
+  const searchParams = useSearchParams();
+  const deepLinkId = searchParams.get("id");
+
   const [logs, setLogs] = useState<AuditRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [verifying, setVerifying] = useState(false);
   const [verifyResult, setVerifyResult] = useState<AuditVerifyResponse | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<AuditRecord | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      const records = await getAuditLog(50, 0);
+      const user = await getCurrentUser();
+      setCurrentUser(user);
+
+      const records = await getAuditLog(50, 0, deepLinkId);
       setLogs(records);
-      if (records.length > 0 && !selectedRecord) {
-        setSelectedRecord(records[0]);
+      if (records.length > 0) {
+        if (deepLinkId) {
+          const match = records.find((r) => r.audit_id === deepLinkId);
+          setSelectedRecord(match || records[0]);
+        } else if (!selectedRecord) {
+          setSelectedRecord(records[0]);
+        }
       }
     } finally {
       setLoading(false);
@@ -30,7 +45,7 @@ export default function SingleScreenAuditPage() {
 
   useEffect(() => {
     fetchLogs();
-  }, []);
+  }, [deepLinkId]);
 
   const handleVerify = async () => {
     setVerifying(true);
@@ -72,9 +87,21 @@ export default function SingleScreenAuditPage() {
         <div>
           <h1 className="text-base font-bold text-[#FAFAFA] flex items-center gap-2">
             🛡️ Cryptographic Audit Ledger
+            {currentUser && (
+              <span className="text-xs font-normal text-[#38BDF8] bg-[#0369A1]/30 border border-[#0284C7] px-2 py-0.5 rounded">
+                User: {currentUser.email}
+              </span>
+            )}
+            {deepLinkId && (
+              <span className="text-xs font-normal text-[#FBBF24] bg-[#78350F]/30 border border-[#92400E] px-2 py-0.5 rounded">
+                Filtered: {deepLinkId.slice(0, 8)}...
+              </span>
+            )}
           </h1>
           <p className="text-xs text-[#A1A1AA]">
-            Tamper-evident log sealed with SHA-256 digital signatures.
+            {currentUser
+              ? "Showing verified audit records for your authenticated account."
+              : "Showing anonymous audit records. Log in to access your personal agent audit trail."}
           </p>
         </div>
 

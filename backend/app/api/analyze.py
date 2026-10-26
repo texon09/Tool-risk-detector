@@ -6,10 +6,11 @@ import logging
 import os
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import numpy as np
 import pandas as pd
+from app.audit.auth_store import AuthStore
 from app.audit.store import AuditStore
 from app.features.extractor import FEATURE_NAMES, extract_features
 from app.ml.ensemble import model_votes, normalize_iso_score, score_risk
@@ -18,7 +19,7 @@ from app.policy.decision import decide
 from app.rules.engine import RuleEngine
 from app.rules.inspector import ArgumentInspector
 from app.schemas import AnalyzeRequest, AnalyzeResponse
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -26,6 +27,7 @@ router = APIRouter()
 rule_engine = RuleEngine()
 inspector = ArgumentInspector()
 audit_store = AuditStore(db_path=os.getenv("DATABASE_URL", "sqlite:///audit.db"))
+auth_store = AuthStore(db_path=os.getenv("DATABASE_URL", "sqlite:///audit.db"))
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 MODEL_DIR = os.getenv("MODEL_DIR", str(REPO_ROOT / "artifacts" / "models" / "v2"))
@@ -82,9 +84,17 @@ def _calculate_feature_contributions(feat_vec: np.ndarray, top_k: int = 5) -> di
 
 
 @router.post("/analyze", response_model=AnalyzeResponse)
-async def analyze_plan(request: AnalyzeRequest) -> AnalyzeResponse:
+async def analyze_plan(
+    request: AnalyzeRequest,
+    x_api_key: Optional[str] = Header(None, alias="X-API-Key"),
+) -> AnalyzeResponse:
     """Analyze an incoming tool call plan and evaluate risk."""
     start_time = time.perf_counter()
+    user_id: Optional[str] = None
+    if x_api_key:
+        user_record = auth_store.get_user_by_api_key(x_api_key)
+        if user_record:
+            user_id = user_record["id"]
 
     try:
         mcp_meta_dict = request.mcp_meta.model_dump() if request.mcp_meta else None
@@ -184,6 +194,7 @@ async def analyze_plan(request: AnalyzeRequest) -> AnalyzeResponse:
             decision=action,
             rationale=rationale,
             trajectory_id=trajectory_id,
+            user_id=user_id,
         )
 
         latency_ms = (time.perf_counter() - start_time) * 1000.0
@@ -213,6 +224,7 @@ async def analyze_plan(request: AnalyzeRequest) -> AnalyzeResponse:
                 payload=request.model_dump() if "request" in locals() else {"error": str(exc)},
                 decision="BLOCK",
                 rationale=rationale,
+                user_id=user_id if "user_id" in locals() else None,
             )
         except Exception:
             audit_id = "fail-closed-emergency"

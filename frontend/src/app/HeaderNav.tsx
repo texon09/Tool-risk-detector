@@ -23,6 +23,16 @@ export default function HeaderNav() {
       label: "Audit Ledger",
       icon: "🛡️",
     },
+    {
+      href: "/keys",
+      label: "API Keys",
+      icon: "🔑",
+    },
+    {
+      href: "/auth",
+      label: "Account",
+      icon: "👤",
+    },
   ];
 
   return (

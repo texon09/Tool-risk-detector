@@ -10,8 +10,16 @@ GENESIS_HASH = "GENESIS"
 
 
 def _canonical_json(record: dict[str, Any]) -> str:
-    """Serialize a record deterministically, excluding derived database fields."""
-    fields = {key: value for key, value in record.items() if key not in {"current_hash", "id"}}
+    """Serialize a record deterministically, excluding derived database fields.
+
+    For backward compatibility with legacy audit records, user_id is excluded
+    when None or absent, and included when present.
+    """
+    fields = {
+        key: value
+        for key, value in record.items()
+        if key not in {"current_hash", "id"} and not (key == "user_id" and value is None)
+    }
     return json.dumps(fields, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 

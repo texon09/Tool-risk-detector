@@ -66,11 +66,16 @@ class AuditStore:
                         current_hash TEXT NOT NULL,
                         payload TEXT NOT NULL,
                         decision TEXT NOT NULL,
-                        rationale TEXT NOT NULL
+                        rationale TEXT NOT NULL,
+                        user_id TEXT
                     )"""
                 )
                 cursor.execute("PRAGMA table_info(audit_logs)")
                 columns = {row[1] for row in cursor.fetchall()}
+                if "user_id" not in columns:
+                    cursor.execute("ALTER TABLE audit_logs ADD COLUMN user_id TEXT")
+                    columns.add("user_id")
+
                 if "audit_id" in columns and "trajectory_id" in columns:
                     return
 
@@ -135,6 +140,7 @@ class AuditStore:
         decision: str,
         rationale: str,
         trajectory_id: str | None = None,
+        user_id: str | None = None,
     ) -> str:
         """Append a decision and return its UUID audit identifier."""
         with self.lock, closing(sqlite3.connect(self.db_path)) as conn:
@@ -146,7 +152,7 @@ class AuditStore:
                 audit_id = str(uuid.uuid4())
                 trajectory_id = trajectory_id or payload.get("trajectory_id") or str(uuid.uuid4())
                 timestamp = datetime.now(timezone.utc).isoformat()
-                record = {
+                record: dict[str, Any] = {
                     "audit_id": audit_id,
                     "trajectory_id": str(trajectory_id),
                     "timestamp": timestamp,
@@ -155,12 +161,15 @@ class AuditStore:
                     "decision": decision,
                     "rationale": rationale,
                 }
+                if user_id is not None:
+                    record["user_id"] = user_id
+
                 current_hash = link(prev_hash, record)
                 cursor.execute(
                     """INSERT INTO audit_logs
                     (audit_id, trajectory_id, timestamp, prev_hash, current_hash,
-                     payload, decision, rationale)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                     payload, decision, rationale, user_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                     (
                         audit_id,
                         str(trajectory_id),
@@ -170,6 +179,7 @@ class AuditStore:
                         record["payload"],
                         decision,
                         rationale,
+                        user_id,
                     ),
                 )
         return audit_id
@@ -190,12 +200,28 @@ class AuditStore:
             "reason": first_error["reason"] if first_error else "Chain intact",
         }
 
-    def get_logs(self, limit: int = 50, offset: int = 0) -> list[dict[str, Any]]:
+    def get_logs(
+        self,
+        limit: int = 50,
+        offset: int = 0,
+        user_id: str | None = None,
+        audit_id: str | None = None,
+    ) -> list[dict[str, Any]]:
         with closing(sqlite3.connect(self.db_path)) as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
-            cursor.execute(
-                "SELECT * FROM audit_logs ORDER BY id DESC LIMIT ? OFFSET ?",
-                (limit, offset),
-            )
+            conditions: list[str] = []
+            params: list[Any] = []
+            if user_id is not None:
+                conditions.append("user_id = ?")
+                params.append(user_id)
+            if audit_id is not None:
+                conditions.append("audit_id = ?")
+                params.append(audit_id)
+
+            where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+            query = f"SELECT * FROM audit_logs {where_clause} ORDER BY id DESC LIMIT ? OFFSET ?"
+            params.extend([limit, offset])
+
+            cursor.execute(query, tuple(params))
             return [dict(row) for row in cursor.fetchall()]

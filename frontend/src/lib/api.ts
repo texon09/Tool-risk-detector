@@ -117,14 +117,148 @@ export async function getMetrics(): Promise<MetricsResponse> {
   }
 }
 
+export interface User {
+  id: string;
+  email: string;
+  created_at: string;
+}
+
+export interface ApiKey {
+  id: string;
+  key_prefix: string;
+  label: string;
+  created_at: string;
+  revoked: number;
+}
+
+export function getStoredSessionToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("planguard_session_token");
+}
+
+export function setStoredSessionToken(token: string | null): void {
+  if (typeof window === "undefined") return;
+  if (token) {
+    localStorage.setItem("planguard_session_token", token);
+  } else {
+    localStorage.removeItem("planguard_session_token");
+  }
+}
+
+export async function signup(email: string, password: string): Promise<{ user: User; session_token: string }> {
+  const res = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Signup failed" }));
+    throw new Error(err.detail || "Signup failed");
+  }
+  const data = await res.json();
+  setStoredSessionToken(data.session_token);
+  return data;
+}
+
+export async function login(email: string, password: string): Promise<{ user: User; session_token: string }> {
+  const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Login failed" }));
+    throw new Error(err.detail || "Login failed");
+  }
+  const data = await res.json();
+  setStoredSessionToken(data.session_token);
+  return data;
+}
+
+export async function getCurrentUser(): Promise<User | null> {
+  const token = getStoredSessionToken();
+  if (!token) return null;
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      setStoredSessionToken(null);
+      return null;
+    }
+    const data = await res.json();
+    return data.user;
+  } catch {
+    return null;
+  }
+}
+
+export async function listApiKeys(): Promise<ApiKey[]> {
+  const token = getStoredSessionToken();
+  if (!token) return [];
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/keys`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.keys || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function createApiKey(label: string): Promise<{ id: string; api_key: string; key_prefix: string; label: string }> {
+  const token = getStoredSessionToken();
+  if (!token) throw new Error("Authentication required");
+  const res = await fetch(`${API_BASE_URL}/api/keys`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ label }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Failed to create key" }));
+    throw new Error(err.detail || "Failed to create key");
+  }
+  return await res.json();
+}
+
+export async function revokeApiKey(keyId: string): Promise<boolean> {
+  const token = getStoredSessionToken();
+  if (!token) return false;
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/keys/${keyId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 export async function getAuditLog(
   limit: number = 50,
-  offset: number = 0
+  offset: number = 0,
+  id?: string | null
 ): Promise<AuditRecord[]> {
   try {
-    const res = await fetch(
-      `${API_BASE_URL}/api/audit?limit=${limit}&offset=${offset}`
-    );
+    const params = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+    if (id) {
+      params.append("id", id);
+    }
+    const token = getStoredSessionToken();
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${API_BASE_URL}/api/audit?${params.toString()}`, {
+      headers,
+    });
     if (!res.ok) return [];
     const data = await res.json();
     if (Array.isArray(data)) return data;
