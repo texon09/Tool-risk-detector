@@ -16,17 +16,18 @@ Every plan is categorized into **`ALLOW`**, **`CONFIRM`**, **`REVISE`**, or **`B
 
 ## 📑 Table of Contents
 1. [Live Demo & Overview](#-live-demo--overview)
-2. [System Architecture](#-system-architecture)
-3. [Repository Structure](#-repository-structure)
-4. [Dataset & Feature Pipeline](#-dataset--feature-pipeline)
-5. [Machine Learning Models & Evaluation](#-machine-learning-models--evaluation)
-6. [Security Rules & Argument Inspection](#-security-rules--argument-inspection)
-7. [Cryptographic Audit Chain (SHA-256)](#-cryptographic-audit-chain-sha-256)
-8. [Local Development Setup](#-local-development-setup)
-9. [Automated Testing & CI/CD](#-automated-testing--cicd)
-10. [Cloud Deployment Guide (Step-by-Step)](#-cloud-deployment-guide-step-by-step)
-11. [Environment Variables Reference](#-environment-variables-reference)
-12. [Fail-Closed Security Guarantee](#-fail-closed-security-guarantee)
+2. [Live LLM Chat Demo (Gemini via LangChain)](#-live-llm-chat-demo-gemini-via-langchain)
+3. [System Architecture](#-system-architecture)
+4. [Repository Structure](#-repository-structure)
+5. [Dataset & Feature Pipeline](#-dataset--feature-pipeline)
+6. [Machine Learning Models & Evaluation](#-machine-learning-models--evaluation)
+7. [Security Rules & Argument Inspection](#-security-rules--argument-inspection)
+8. [Cryptographic Audit Chain (SHA-256)](#-cryptographic-audit-chain-sha-256)
+9. [Local Development Setup](#-local-development-setup)
+10. [Automated Testing & CI/CD](#-automated-testing--cicd)
+11. [Cloud Deployment Guide (Step-by-Step)](#-cloud-deployment-guide-step-by-step)
+12. [Environment Variables Reference](#-environment-variables-reference)
+13. [Fail-Closed Security Guarantee](#-fail-closed-security-guarantee)
 
 ---
 
@@ -43,12 +44,30 @@ Explore the live cloud deployment here:
 
 ---
 
+## 🤖 Live LLM Chat Demo (Gemini via LangChain)
+
+A dedicated, isolated chat application located in [`chat_demo/`](chat_demo/) demonstrates PlanGuard operating as a real-time pre-execution firewall directly in front of Google Gemini (via LangChain).
+
+```bash
+# 1. Install demo requirements
+pip install -r chat_demo/requirements.txt
+
+# 2. Run Streamlit UI
+streamlit run chat_demo/app.py
+```
+See the [`chat_demo/README.md`](chat_demo/README.md) for detailed instructions, test cases, and observed decision benchmarks.
+
+---
+
 ## 🏛️ System Architecture
+
+> [!NOTE]
+> The `mcp_proxy/` directory provides an MCP-style interception prototype over mock servers, not a real MCP integration. PlanGuard interacts with agents and proxy layers via its standard HTTP endpoint (`POST /api/analyze`).
 
 ```mermaid
 flowchart TD
     subgraph Agent Environment
-        LLM[Autonomous Agent / LLM] -->|Tool-Call Intent| Proxy[MCP Guardrail Proxy]
+        LLM[Autonomous Agent / LLM] -->|Tool-Call Intent| Proxy[Interception Proxy Prototype]
     end
 
     subgraph Guardrail API Engine [FastAPI Service]
@@ -105,13 +124,14 @@ flowchart TD
 │   │   └── schemas.py       # Pydantic v2 validation models
 │   ├── tests/               # Backend unit and integration test suite
 │   └── training/            # Dataset synthesis, split scripts, LOFO validation, and model training
+├── chat_demo/               # Streamlit + LangChain Gemini live chat guardrail demo
 ├── data/
 │   └── processed/           # Processed datasets (train, test, val, adversarial, LOFO CSVs)
 ├── frontend/                # Next.js 14 Bento Grid dashboard (deployed to Vercel)
-│   ├── src/app/             # Single-screen dashboard UI
+│   ├── src/app/             # Single-screen dashboard UI (audit ledger, auth, API keys)
 │   ├── src/lib/             # API client and TypeScript interfaces
 │   └── vercel.json          # Vercel deployment configuration
-├── mcp_proxy/               # Interception proxy for Model Context Protocol (MCP) servers
+├── mcp_proxy/               # MCP-style interception prototype over mock servers (not a full MCP integration)
 ├── Dockerfile               # Production multi-stage Dockerfile (python:3.11-slim, non-root)
 ├── docker-compose.yml       # Local multi-container development environment
 ├── pyproject.toml           # Ruff and Pytest project configuration
@@ -152,16 +172,17 @@ The ML subsystem uses an ensemble of tree-based and anomaly detection models cal
 | **Decision Tree** | `10%` | Fast, interpretable local decision boundary verification |
 | **Isolation Forest** | `10%` | Unsupervised anomaly detection for novel zero-day patterns |
 
-### Performance Benchmark
+### Performance Evaluation
+The models are evaluated against the held-out test splits (`data/processed/test_features.csv` and Leave-One-Family-Out validation datasets). Detailed metrics and confusion matrices are reproducible via `backend.training.evaluate` and persisted in `artifacts/metrics/results.json`.
 
-| Model | F1-Score | Precision | Recall | ROC-AUC |
-| :--- | :--- | :--- | :--- | :--- |
-| **Random Forest** | `0.9982` | `0.9971` | `0.9994` | `0.9998` |
-| **XGBoost** | `0.9985` | `0.9975` | `0.9995` | `0.9999` |
-| **Decision Tree** | `0.9960` | `0.9950` | `0.9970` | `0.9970` |
-| **Ensemble (Calibrated)** | **`0.9985`** | **`0.9975`** | **`0.9995`** | **`0.9999`** |
+Representative evaluation metrics across test splits:
+- **Decision Tree**: Macro F1 ~0.90–0.98, AUROC ~0.98–1.00
+- **Random Forest**: Macro F1 ~0.98–1.00, AUROC ~0.99–1.00
+- **XGBoost**: Macro F1 ~0.98–1.00, AUROC ~0.99–1.00
+- **Isolation Forest**: Recall ~0.91 on high-risk anomalies
+- **Calibrated Ensemble**: High-risk recall $\ge 0.99$ at conservative false-positive thresholds.
 
-*Inference Latency: ~5ms average per plan.*
+Per-request latency is dynamically measured and reported in the API response under `latency_ms` (typically ranging from a few milliseconds locally to network transmission time in cloud deployments).
 
 ---
 
@@ -278,6 +299,9 @@ The application architecture is optimized for cloud deployment:
    - `MODEL_DIR`: `/app/artifacts/models/v2`
    - `DATA_DIR`: `/app/data/processed`
 5. Click **Create Web Service**. Once deployed, copy your service URL (e.g., `https://tool-risk-detector-api.onrender.com`).
+
+> [!NOTE]
+> **Database Persistence Note**: On the Render free tier, filesystem storage is ephemeral, meaning `audit.db` may reset across service restarts or spin-downs. For persistent audit histories in production environments, run the service locally, attach a persistent Render disk, or point `DATABASE_URL` to a hosted database (such as a hosted PostgreSQL instance).
 
 ### Step 2: Deploy Frontend on Vercel
 1. Log in to [vercel.com](https://vercel.com) with GitHub.

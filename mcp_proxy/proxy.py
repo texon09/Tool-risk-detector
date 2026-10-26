@@ -1,4 +1,4 @@
-"""MCP Proxy Guardrail intercepting tool calls and enforcing security decisions."""
+"""MCP-style interception prototype over mock servers, not a real MCP integration."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ logger = logging.getLogger("mcp.proxy")
 
 
 class MCPProxy:
-    """Proxy guardrail intercepting MCP tool calls before execution."""
+    """Interception prototype over mock servers evaluating tool call risk before execution."""
 
     def __init__(self, api_base_url: str = "http://127.0.0.1:8000", client: Any = None):
         self.api_base_url = api_base_url.rstrip("/")
