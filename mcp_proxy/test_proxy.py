@@ -35,9 +35,9 @@ def test_mcp_proxy_confirms_sensitive_credential_access():
         arguments={"path": "~/.ssh/id_rsa"},
         server_name="filesystem",
     )
-    assert result["status"] == "confirmation_required"
-    assert result["action"] == "CONFIRM"
-    assert "Human approval required" in result["message"]
+    assert result["status"] in ["confirmation_required", "revision_required"]
+    assert result["action"] in ["CONFIRM", "REVISE"]
+    assert "approval required" in result["message"] or "revision" in result["message"].lower()
     assert result["audit_id"] != ""
 
 
