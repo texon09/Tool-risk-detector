@@ -342,7 +342,168 @@ The service is containerized as a lightweight, secure image:
 
 ---
 
-## 9. Summary Formula Index
+## 9. Chat App Integration: How PlanGuard Works with Autonomous Agents
+
+The interactive Chat Demo (`chat_demo/`) provides an end-to-end interface for users and autonomous AI agents. It demonstrates how PlanGuard acts as an **interception proxy** between LLM intention and actual runtime tool execution.
+
+```
+ [User Prompt in UI]
+         │
+         ▼
+ ┌─────────────────────────────────────────────────────────────┐
+ │ 1. Gemini LLM (LangChain)                                   │
+ │    • Tool-binding (`bind_tools(ALL_TOOLS)`)                 │
+ │    • Returns AIMessage with `tool_calls` (NO execution yet!)│
+ └──────────────────────────────┬──────────────────────────────┘
+                                │
+                                ▼
+ ┌─────────────────────────────────────────────────────────────┐
+ │ 2. Plan Compilation (`to_plan` & `map_tool_call_to_step`)    │
+ │    • Tool Metadata Registry lookup                          │
+ │    • Data sensitivity classification (`restricted`, etc.)   │
+ │    • Destination derivation (`internal` vs `external`)      │
+ │    • Assembles canonical JSON schema                        │
+ └──────────────────────────────┬──────────────────────────────┘
+                                │
+                                ▼
+ ┌─────────────────────────────────────────────────────────────┐
+ │ 3. PlanGuard Check (`POST /api/analyze`)                     │
+ │    • Risk Score, Rule Hits, Rationale, and Action computed  │
+ └──────────────────────────────┬──────────────────────────────┘
+                                │
+         ┌──────────────────────┼──────────────────────┐
+         ▼                      ▼                      ▼
+    [ ALLOW ]              [ CONFIRM ]            [ REVISE / BLOCK ]
+         │                      │                      │
+         ▼                      ▼                      ▼
+  Execute Tools            Pause in UI            Prevent execution;
+  & Return LLM            Wait for Human          return security
+  Summary Response           Approval             rationale to user
+```
+
+### 9.1 How the Canonical Plan JSON is Obtained from LLM Tool Calls
+
+Autonomous LLMs (e.g., Google Gemini 3.5 Flash Lite) return raw tool calls in their API responses. The adapter (`chat_demo/guard_client.py`) transforms these raw invocations into the structured schema expected by the PlanGuard backend:
+
+#### Step 1: Raw LLM Tool Call Interception
+When the user submits `"Tell me the size of notes.txt"`, Gemini outputs an `AIMessage` containing structured tool calls:
+```json
+{
+  "name": "file_read",
+  "args": {"path": "notes.txt"},
+  "id": "call_abcd1234"
+}
+```
+*Crucially: the agent halts here and does NOT invoke the underlying Python function.*
+
+#### Step 2: Metadata Registry Enrichment (`TOOL_REGISTRY`)
+Every tool has a static security profile:
+```python
+TOOL_REGISTRY = {
+    "file_read": {
+        "permissions_required": ["filesystem:read"],
+        "side_effect_class": "read",
+        "reversible": True,
+        "destination": "internal",
+        "estimated_cost": 0.1,
+    },
+    "db_query": {
+        "permissions_required": ["database:read"],
+        "side_effect_class": "read",
+        "reversible": True,
+        "destination": "internal",
+        "estimated_cost": 0.1,
+    },
+    "http_post": {
+        "permissions_required": ["network:external"],
+        "side_effect_class": "write",
+        "reversible": False,
+        "destination": "external",
+        "estimated_cost": 0.5,
+    },
+    ...
+}
+```
+
+#### Step 3: Dynamic Sensitivity & Destination Derivation
+The adapter inspects the argument strings to derive data sensitivity:
+- **`restricted`**: Triggered by patterns such as `id_rsa`, `.env`, `password`, `secret`, `private_key`, `/etc/passwd`.
+- **`confidential`**: Triggered by patterns like `customers`, `clients`, `users`, `pii`, `billing`, `orders`.
+- **`internal` / `public`**: Standard business operational files.
+
+If a customer database query is detected, `customer_data:read` is dynamically appended to `permissions_required`. For network tools (`http_post`), destination URLs are parsed with `urllib.parse.urlsplit` to determine whether the target is `internal` (e.g. `localhost`, `*.internal`) or `external`.
+
+#### Step 4: The Final PlanGuard JSON Payload (`to_plan()`)
+The compiled JSON payload sent to `POST /api/analyze` is structured as:
+```json
+{
+  "plan": {
+    "steps": [
+      {
+        "tool_name": "file_read",
+        "arguments": {
+          "path": "notes.txt"
+        },
+        "permissions_required": [
+          "filesystem:read"
+        ],
+        "side_effect_class": "read",
+        "reversible": true,
+        "data_sensitivity": "internal",
+        "destination": "internal",
+        "estimated_cost": 0.1
+      }
+    ],
+    "session_context": {
+      "granted_permissions": [
+        "filesystem:read",
+        "database:read"
+      ]
+    }
+  },
+  "session_context": {
+    "granted_permissions": [
+      "filesystem:read",
+      "database:read"
+    ]
+  },
+  "context": {
+    "trajectory_id": "chat-session-uuid"
+  }
+}
+```
+
+### 9.2 Execution Control Flow in the Chat App
+
+The chat application (`chat_demo/agent.py` and `chat_demo/app.py`) evaluates the returned action:
+
+1. **`ALLOW`**:
+   - The sandboxed tool is safely executed in Python via `execute_tools()`.
+   - Tool outputs are appended to the conversation history as `ToolMessage(content=...)`.
+   - Gemini is invoked one final time to summarize the findings for the user.
+2. **`CONFIRM` (Human-in-the-Loop)**:
+   - Tool execution is suspended immediately.
+   - The UI presents an interactive card: *"The assistant wants your approval"*, detailing the tool names, sensitivity labels, and rationale.
+   - **Approve**: Resumes execution of the exact pending plan without re-planning.
+   - **Deny**: Cancels execution; no tools are run and no extra LLM tokens are spent.
+3. **`REVISE` (Self-Correction Loop)**:
+   - The plan is paused. The user sees: *"PlanGuard asked the assistant to change its plan"*.
+   - The user can click *"Revise"* (or add an optional refinement note).
+   - The security rationale and rule violations are injected back into Gemini as security feedback:
+     ```text
+     SECURITY WARNING from PlanGuard Guardrail:
+     Action: REVISE
+     Rationale: Unbounded query on sensitive table without LIMIT.
+     Violations: R5
+     Please reformulate a safer plan without unauthorized access or risky parameters.
+     ```
+   - Gemini plans a revised strategy up to a strict cap of 2 attempts before failing closed to `BLOCK`.
+4. **`BLOCK`**:
+   - Complete refusal. Execution is halted. A refusal explanation generated from the PlanGuard rationale is rendered immediately in the chat bubble without issuing a second LLM call.
+
+---
+
+## 10. Summary Formula Index
 
 $$\begin{aligned}
 \text{Normalized Anomaly Score:} \quad & s_{\text{iso}} = \text{clip}\left( \frac{0.15 - s_{\text{raw}}}{0.15 - (-0.25)}, 0.0, 1.0 \right) \\
@@ -351,3 +512,4 @@ $$\begin{aligned}
 \text{Cryptographic Hash Link:} \quad & H_i = \text{SHA256}(\text{Canonical}(R_i \cup \{ \text{"prev\_hash"}: H_{i-1} \})) \\
 \text{Policy Bounds:} \quad & \text{ALLOW} < 0.40 \le \text{REVISE} < 0.60 \le \text{CONFIRM} < 0.90 \le \text{BLOCK}
 \end{aligned}$$
+
